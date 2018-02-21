@@ -1,0 +1,10 @@
+﻿{
+    "key1": "value1-2",
+    "key2": {
+        "subKey1": "subValue1",
+        "subKey2": "subValue2"
+    },
+    "key3": "value3",
+    "key4": 25,
+    "key5": 123.456,
+}
