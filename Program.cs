@@ -8,17 +8,27 @@ namespace NetCoreConfigTest
 {
     class Program
     {
+        public static string ProjectDirectory
+        {
+            get
+            {
+                var asmLocation = typeof(Program).Assembly.Location;
+                var asmDir = Path.GetDirectoryName(asmLocation);
+                return Path.GetFullPath(Path.Combine(asmDir, "../../.."));
+            }
+        }
+
         static void Main(string[] args)
         {
             var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
+                .SetBasePath(ProjectDirectory)
                 .AddJsonFile("settings1.json", false, true)
                 .AddJsonFile("settings2.json", false, true)
                 .AddIniFile("settings3.ini", false, true)
                 .AddYamlFile("settings4.yml", false, true)
                 .AddPyFile("settings5.py", false, true);
 
-            var config = builder.Build();
+            var config = builder.Build().GetSection("key2");
             do
             {
                 DumpConfig(config);

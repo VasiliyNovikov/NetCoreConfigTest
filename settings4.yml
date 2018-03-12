@@ -2,6 +2,6 @@
 key1:   value1-yaml,
 key2:
     subKey3:    subValue3-1-yaml
-    subKey4:    subValue4-yaml
+    subKey4:    subValue4-1-yaml
 key6:   value6-jaml
 key7:   value7-jaml
