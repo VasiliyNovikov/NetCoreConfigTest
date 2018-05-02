@@ -3,6 +3,8 @@ using NetCoreConfigTest.Py;
 using NetCoreConfigTest.Yaml;
 using System;
 using System.IO;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace NetCoreConfigTest
 {
@@ -20,7 +22,9 @@ namespace NetCoreConfigTest
 
         static void Main(string[] args)
         {
-            var builder = new ConfigurationBuilder()
+            var svcBuilder = new ServiceCollection();
+
+            var cfgBuilder = new ConfigurationBuilder()
                 .SetBasePath(ProjectDirectory)
                 .AddJsonFile("settings1.json", false, true)
                 .AddJsonFile("settings2.json", false, true)
@@ -28,13 +32,24 @@ namespace NetCoreConfigTest
                 .AddYamlFile("settings4.yml", false, true)
                 .AddPyFile("settings5.py", false, true);
 
-            var config = builder.Build().GetSection("key2");
-            do
+            var config = cfgBuilder.Build();
+
+            svcBuilder.AddSingleton<IConfiguration>(config);
+            svcBuilder.AddOptions();
+            svcBuilder.Configure<ConfigObj>(config.GetSection("object"));
+
+            using (var services = svcBuilder.BuildServiceProvider())
             {
-                DumpConfig(config);
-                Console.WriteLine("______________________________________");
+                var configSection = config.GetSection("key2");
+                var objAccessor = services.GetService<IOptionsMonitor<ConfigObj>>();
+                do
+                {
+                    //DumpConfig(config);
+                    //DumpConfig(configSection);
+                    DumpObj(objAccessor);
+                    Console.WriteLine("______________________________________");
+                } while (Console.ReadLine() != "q");
             }
-            while (Console.ReadLine() != "q");
         }
 
         static void DumpConfig(IConfiguration config, string indent = "")
@@ -47,6 +62,21 @@ namespace NetCoreConfigTest
 
             foreach (var child in config.GetChildren())
                 DumpConfig(child, indent);
+        }
+
+        static void DumpObj(IOptionsMonitor<ConfigObj> objAccessor)
+        {
+            var obj = objAccessor.CurrentValue;
+            Console.WriteLine($"IntProp: {obj.IntProp}");
+            Console.WriteLine($"StrProp: {obj.StrProp}");
+            Console.WriteLine($"ArrProp: [{String.Join(", ", obj.ArrayProp)}]");
+        }
+
+        class ConfigObj
+        {
+            public int IntProp { get; set; }
+            public string StrProp { get; set; }
+            public string[] ArrayProp { get; set; }
         }
     }
 }
